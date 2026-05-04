@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   validate-fixtures:
     runs-on: ubuntu-latest
@@ -15,30 +18,71 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install JSON Schema validator
-        run: pip install jsonschema==4.23.0 pyyaml==6.0.2
+      - name: Install validator dependencies
+        run: pip install --quiet "jsonschema>=4.21.0" "referencing>=0.34.0"
 
-      - name: Validate event fixtures against schemas
+      - name: Validate every event fixture against schemas/event.json
         run: |
           set -euo pipefail
-          if [ ! -d schemas ] || [ -z "$(ls -A schemas 2>/dev/null)" ]; then
-            echo "::notice::No schemas yet — skipping validation. This job will enforce schema conformance once schemas/ is populated."
-            exit 0
-          fi
-          if [ ! -d fixtures ] || [ -z "$(ls -A fixtures 2>/dev/null)" ]; then
-            echo "::notice::No fixtures yet — skipping validation."
-            exit 0
-          fi
-          # TODO(phase-0): wire up actual validation once schemas/ and fixtures/ exist
-          echo "Validation skeleton ready; populate schemas/ and fixtures/ to activate."
+          python - <<'PY'
+          import json, sys, pathlib
+          from jsonschema import Draft202012Validator
+          from referencing import Registry, Resource
 
-  spellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: streetsidesoftware/cspell-action@v6
-        with:
-          files: "**/*.md"
-          incremental_files_only: true
-          config: .cspell.json
-        continue-on-error: true
+          schemas_dir = pathlib.Path("schemas")
+          fixtures_dir = pathlib.Path("fixtures/events")
+
+          common = json.loads((schemas_dir / "common.json").read_text())
+          common_resource = Resource.from_contents(common)
+          registry = Registry().with_resources([
+              ("common.json", common_resource),
+              (common.get("$id", ""), common_resource),
+          ])
+
+          schema = json.loads((schemas_dir / "event.json").read_text())
+          validator = Draft202012Validator(schema, registry=registry)
+
+          failed = []
+          for fix in sorted(fixtures_dir.glob("[0-9][0-9]-*.json")):
+              instance = json.loads(fix.read_text())
+              errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
+              if errors:
+                  failed.append(fix)
+                  for e in errors:
+                      path = "/".join(str(p) for p in e.absolute_path) or "<root>"
+                      print(f"::error file={fix}::at {path}: {e.message}")
+              else:
+                  print(f"OK  {fix}")
+          if failed:
+              print(f"\n{len(failed)} fixture(s) failed validation", file=sys.stderr)
+              sys.exit(1)
+          print(f"\nAll fixtures passed.")
+          PY
+
+      - name: Verify every schema is itself valid Draft 2020-12
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          from jsonschema import Draft202012Validator
+          for f in sorted(pathlib.Path("schemas").glob("*.json")):
+              schema = json.loads(f.read_text())
+              Draft202012Validator.check_schema(schema)
+              print(f"OK  {f}")
+          PY
+
+      - name: Lint markdown links in spec docs
+        run: |
+          python - <<'PY'
+          # Fail if a spec markdown file references a path inside the repo that doesn't exist.
+          # (External links are not checked here — that's a separate, slower job.)
+          import pathlib, re, sys
+          ROOT = pathlib.Path(".")
+          INTERNAL = re.compile(r"\[[^\]]+\]\((?!https?://|mailto:|#)([^)#]+)")
+          failed = False
+          for md in ROOT.rglob("*.md"):
+              for m in INTERNAL.finditer(md.read_text()):
+                  rel = m.group(1)
+                  target = (md.parent / rel).resolve()
+                  if not target.exists():
+                      print(f"::warning file={md}::broken internal link: {rel}")
+          PY

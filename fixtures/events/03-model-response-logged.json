@@ -1,0 +1,31 @@
+{
+  "agp_version": "0.1",
+  "schema_version": "1.0",
+  "event_id": "evt_01JFXY8D2M5KQR8VN3HJWBPTC4",
+  "occurred_at": "2026-08-12T14:23:12.103Z",
+  "actor": {
+    "vendor": "openai.com",
+    "agent_id": "agt_gpt_5",
+    "human_principal": "user_hash_2d4f8c1a9e3b7d50"
+  },
+  "action": {
+    "type": "model_response",
+    "input_summary": "Summarize the attached financials in 5 bullets",
+    "output_summary": "5 bullets summarizing Q3 revenue, OpEx, headcount, churn, cash runway",
+    "input_hash": "sha256:c1f8d9e2a36b7045fe1c8d97b203e418ab95d72c0fe4581b6cd2a7e3091d5826",
+    "output_hash": "sha256:4e7a91b3d8c25f603a2b97c1e4f5ad8716c29b5430ed97a82b41fc9d038e6052"
+  },
+  "policy": {
+    "decision": "logged_only",
+    "rule_id": "rule_log_all_model_responses",
+    "policy_hash": "sha256:9a3c7b1e5d2f8014c6a93b4ef1ad7c98e02fab51d3c984671bd2e08f4a52cb37"
+  },
+  "lineage": {
+    "trace_id": "trc_01JFXY7P3NHYK8MQRCVB05XGD2"
+  },
+  "signature": {
+    "key_id": "openai-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

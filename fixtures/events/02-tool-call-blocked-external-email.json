@@ -1,0 +1,33 @@
+{
+  "agp_version": "0.1",
+  "schema_version": "1.0",
+  "event_id": "evt_01JFXY8C7N4PZQ3HMR2K0DXTGF",
+  "occurred_at": "2026-08-12T14:23:11.847Z",
+  "actor": {
+    "vendor": "anthropic.com",
+    "agent_id": "agt_claude_sonnet_4_6",
+    "human_principal": "user_hash_2d4f8c1a9e3b7d50"
+  },
+  "action": {
+    "type": "tool_call",
+    "tool_name": "email.send",
+    "target_resource": "external@customer.com",
+    "input_summary": "Quarterly report summary attached",
+    "input_hash": "sha256:7b8d1f2e9c4a6035b1d89427fe5a3c0fa1b94d6e827340c5fe1b6a9d8c742031"
+  },
+  "policy": {
+    "decision": "blocked",
+    "rule_id": "rule_external_email_review",
+    "policy_hash": "sha256:9a3c7b1e5d2f8014c6a93b4ef1ad7c98e02fab51d3c984671bd2e08f4a52cb37",
+    "rationale": "external email recipient requires human review"
+  },
+  "lineage": {
+    "trace_id": "trc_01JFXY7P0KZ8ME6X4WCBVQHRGD",
+    "parent_event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2"
+  },
+  "signature": {
+    "key_id": "anthropic-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

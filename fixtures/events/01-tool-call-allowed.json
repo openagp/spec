@@ -1,0 +1,33 @@
+{
+  "agp_version": "0.1",
+  "schema_version": "1.0",
+  "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+  "occurred_at": "2026-08-12T14:23:11.412Z",
+  "actor": {
+    "vendor": "anthropic.com",
+    "agent_id": "agt_claude_sonnet_4_6",
+    "human_principal": "user_hash_2d4f8c1a9e3b7d50"
+  },
+  "action": {
+    "type": "tool_call",
+    "tool_name": "browser.navigate",
+    "target_resource": "https://acme.com/internal/dashboard",
+    "input_summary": "Open the Q3 dashboard",
+    "input_hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "policy": {
+    "decision": "allowed",
+    "rule_id": "rule_internal_resource_open",
+    "policy_hash": "sha256:9a3c7b1e5d2f8014c6a93b4ef1ad7c98e02fab51d3c984671bd2e08f4a52cb37",
+    "rationale": "target_resource is in customer-owned allowlist domain"
+  },
+  "lineage": {
+    "trace_id": "trc_01JFXY7P0KZ8ME6X4WCBVQHRGD",
+    "parent_event_id": null
+  },
+  "signature": {
+    "key_id": "anthropic-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

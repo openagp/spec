@@ -1,0 +1,19 @@
+{
+  "agp_version": "0.1",
+  "schema_version": "1.0",
+  "event_id": "evt_01JFXY7M0AB1CD2EF3GH4JK5NM",
+  "occurred_at": "2026-08-12T14:23:10.001Z",
+  "actor": {
+    "vendor": "internal-platform.acme.com",
+    "agent_id": "agt_inventory_bot_v3"
+  },
+  "action": {
+    "type": "session_open",
+    "input_summary": "session opened by scheduled trigger every 4 hours"
+  },
+  "signature": {
+    "key_id": "acme-internal-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}
