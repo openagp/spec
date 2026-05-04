@@ -1,0 +1,33 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "agp",
+    "openagp",
+    "Anthropic",
+    "Pydantic",
+    "FastAPI",
+    "httpx",
+    "Cobra",
+    "Ed25519",
+    "JCS",
+    "ULID",
+    "mTLS",
+    "OASIS",
+    "Vanta",
+    "Drata",
+    "Purview",
+    "Okta",
+    "Zeron",
+    "ZAK",
+    "MCP",
+    "SCF"
+  ],
+  "ignorePaths": [
+    "fixtures/**",
+    "schemas/**",
+    "**/*.json",
+    "**/*.yaml",
+    "**/*.yml"
+  ]
+}

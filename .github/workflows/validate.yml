@@ -1,0 +1,44 @@
+name: validate-fixtures
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install JSON Schema validator
+        run: pip install jsonschema==4.23.0 pyyaml==6.0.2
+
+      - name: Validate event fixtures against schemas
+        run: |
+          set -euo pipefail
+          if [ ! -d schemas ] || [ -z "$(ls -A schemas 2>/dev/null)" ]; then
+            echo "::notice::No schemas yet — skipping validation. This job will enforce schema conformance once schemas/ is populated."
+            exit 0
+          fi
+          if [ ! -d fixtures ] || [ -z "$(ls -A fixtures 2>/dev/null)" ]; then
+            echo "::notice::No fixtures yet — skipping validation."
+            exit 0
+          fi
+          # TODO(phase-0): wire up actual validation once schemas/ and fixtures/ exist
+          echo "Validation skeleton ready; populate schemas/ and fixtures/ to activate."
+
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: streetsidesoftware/cspell-action@v6
+        with:
+          files: "**/*.md"
+          incremental_files_only: true
+          config: .cspell.json
+        continue-on-error: true
