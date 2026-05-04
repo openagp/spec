@@ -1,0 +1,36 @@
+{
+  "agp_policy_version": "0.1",
+  "policy_id": "acme-vendor-allowlist",
+  "policy_hash": "sha256:3c8a6e1f5b9d2740c8a173e4bf9520c8d6e2f9a1b4c70583e9d4f1c25a8e7036",
+  "issuer": "acme.example.com",
+  "issued_at": "2026-08-01T00:00:00Z",
+  "applies_to": {
+    "vendors": ["*"],
+    "agents": ["*"]
+  },
+  "rules": [
+    {
+      "id": "rule_block_unapproved_vendor",
+      "when": {
+        "actor.vendor": {
+          "not_in": ["anthropic.com", "openai.com", "internal-platform.acme.com"]
+        }
+      },
+      "then": {
+        "decision": "blocked",
+        "reason": "vendor is not on the approved allowlist"
+      }
+    }
+  ],
+  "fallback": {
+    "decision": "block"
+  },
+  "metadata": {
+    "description": "Reject every action from any vendor not in the approved set."
+  },
+  "signature": {
+    "key_id": "acme-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "agp_policy_version": "0.1",
+  "policy_id": "acme-block-external-email",
+  "policy_hash": "sha256:9a3c7b1e5d2f8014c6a93b4ef1ad7c98e02fab51d3c984671bd2e08f4a52cb37",
+  "issuer": "acme.example.com",
+  "issued_at": "2026-08-01T00:00:00Z",
+  "applies_to": {
+    "vendors": ["*"],
+    "agents": ["*"],
+    "actions": ["tool_call"]
+  },
+  "rules": [
+    {
+      "id": "rule_external_email_blocked",
+      "when": {
+        "action.tool_name": "email.send",
+        "action.target_resource": {
+          "domain_not_in": ["acme.com", "*.acme.com"]
+        }
+      },
+      "then": {
+        "decision": "blocked",
+        "reason": "external email recipient requires human review"
+      }
+    }
+  ],
+  "fallback": {
+    "decision": "allow_with_log"
+  },
+  "metadata": {
+    "description": "Block any email.send tool_call where the recipient is outside acme.com.",
+    "contact": "security@acme.example.com"
+  },
+  "signature": {
+    "key_id": "acme-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

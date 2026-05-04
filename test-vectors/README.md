@@ -8,6 +8,7 @@ This directory holds **deterministic byte-level test vectors** that every AGP im
 |---|---|
 | [`v0.1-canonicalization.json`](v0.1-canonicalization.json) | RFC 8785 JCS vectors. For each input, implementations MUST produce identical canonical UTF-8 bytes (verified by hex match and by SHA-256 hash). |
 | [`v0.1-signatures.json`](v0.1-signatures.json) | Sign + verify vectors with a fixed test keypair. For each input, implementations MUST produce identical signing-input bytes and identical Ed25519 signatures (Ed25519 is deterministic per RFC 8032). |
+| [`v0.1-policy-decisions.json`](v0.1-policy-decisions.json) | Policy DSL evaluator vectors. For each (policy fixture, event) pair, both SDKs MUST produce identical (decision, rule_id, annotate). Divergence means the DSL semantics have drifted between languages. |
 
 ## How implementations consume these
 

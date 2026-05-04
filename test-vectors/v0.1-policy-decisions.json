@@ -1,0 +1,315 @@
+{
+  "agp_version": "0.1",
+  "description": "Cross-language policy DSL evaluator test vectors. Both SDKs must produce identical (decision, rule_id, annotate) for every (policy, event) pair below — divergence means the DSL semantics have drifted.",
+  "vectors": [
+    {
+      "name": "01-block-external-email__internal_email_passes",
+      "policy_fixture": "01-block-external-email.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "email.send",
+          "target_resource": "boss@acme.com"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "01-block-external-email__external_email_blocked",
+      "policy_fixture": "01-block-external-email.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "email.send",
+          "target_resource": "external@customer.com"
+        }
+      },
+      "expected_decision": "blocked",
+      "expected_rule_id": "rule_external_email_blocked",
+      "expected_annotate": {}
+    },
+    {
+      "name": "01-block-external-email__subdomain_internal_passes",
+      "policy_fixture": "01-block-external-email.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "email.send",
+          "target_resource": "user@uk.acme.com"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "02-block-pii-outbound__pii_outbound_blocked",
+      "policy_fixture": "02-block-pii-outbound.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "any.tool",
+          "target_resource": "https://external.com/api",
+          "input_summary": "user provided their ssn 123-45-6789"
+        }
+      },
+      "expected_decision": "blocked",
+      "expected_rule_id": "rule_pii_outbound_blocked",
+      "expected_annotate": {}
+    },
+    {
+      "name": "02-block-pii-outbound__pii_internal_passes",
+      "policy_fixture": "02-block-pii-outbound.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "any.tool",
+          "target_resource": "https://acme.com/internal",
+          "input_summary": "ssn provided"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "02-block-pii-outbound__no_pii_passes",
+      "policy_fixture": "02-block-pii-outbound.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "any.tool",
+          "target_resource": "https://external.com/api",
+          "input_summary": "weather forecast"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "03-log-database-writes__write_logged",
+      "policy_fixture": "03-log-database-writes.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "database.write_users"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "rule_log_all_database_writes",
+      "expected_annotate": {
+        "scf_controls": [
+          "DATA-08",
+          "AUDIT-12"
+        ]
+      }
+    },
+    {
+      "name": "03-log-database-writes__read_passes",
+      "policy_fixture": "03-log-database-writes.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "database.read_users"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "04-vendor-allowlist__approved_passes_to_fallback",
+      "policy_fixture": "04-vendor-allowlist.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "openai.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call"
+        }
+      },
+      "expected_decision": "blocked",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    },
+    {
+      "name": "04-vendor-allowlist__unapproved_blocked",
+      "policy_fixture": "04-vendor-allowlist.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "rogue.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call"
+        }
+      },
+      "expected_decision": "blocked",
+      "expected_rule_id": "rule_block_unapproved_vendor",
+      "expected_annotate": {}
+    },
+    {
+      "name": "05-multi-rule-composite__competitor_email_first_match",
+      "policy_fixture": "05-multi-rule-composite.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "email.send",
+          "target_resource": "lead@competitor1.com"
+        }
+      },
+      "expected_decision": "blocked",
+      "expected_rule_id": "rule_block_email_to_competitors",
+      "expected_annotate": {}
+    },
+    {
+      "name": "05-multi-rule-composite__external_nav_logged",
+      "policy_fixture": "05-multi-rule-composite.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "browser.navigate",
+          "target_resource": "https://news.ycombinator.com"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "rule_log_external_browser_navigation",
+      "expected_annotate": {}
+    },
+    {
+      "name": "05-multi-rule-composite__internal_db_read_allowed",
+      "policy_fixture": "05-multi-rule-composite.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "database.read_orders"
+        }
+      },
+      "expected_decision": "allowed",
+      "expected_rule_id": "rule_allow_internal_database_reads",
+      "expected_annotate": {}
+    },
+    {
+      "name": "05-multi-rule-composite__no_match_falls_through",
+      "policy_fixture": "05-multi-rule-composite.json",
+      "event": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "anthropic.com",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call",
+          "tool_name": "browser.navigate",
+          "target_resource": "https://acme.com/dash"
+        }
+      },
+      "expected_decision": "logged_only",
+      "expected_rule_id": "fallback",
+      "expected_annotate": {}
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "agp_policy_version": "0.1",
+  "policy_id": "acme-block-pii-outbound",
+  "policy_hash": "sha256:1f9c8e2b7d4a3650d1e2f8c4ab95730fc6b8e91d4a2c7058b3e9d2f4a1c87560",
+  "issuer": "acme.example.com",
+  "issued_at": "2026-08-01T00:00:00Z",
+  "applies_to": {
+    "vendors": ["*"],
+    "agents": ["*"],
+    "actions": ["tool_call", "model_response"]
+  },
+  "rules": [
+    {
+      "id": "rule_pii_outbound_blocked",
+      "when": {
+        "action.target_resource": {
+          "domain_not_in": ["acme.com", "*.acme.com"]
+        },
+        "action.input_summary": {
+          "contains_pattern": "ssn|credit[ _-]?card|password"
+        }
+      },
+      "then": {
+        "decision": "blocked",
+        "reason": "PII pattern detected in outbound action"
+      }
+    }
+  ],
+  "fallback": {
+    "decision": "allow_with_log"
+  },
+  "metadata": {
+    "description": "Block any outbound action whose input matches PII keyword patterns."
+  },
+  "signature": {
+    "key_id": "acme-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

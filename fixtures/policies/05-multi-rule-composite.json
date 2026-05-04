@@ -1,0 +1,62 @@
+{
+  "agp_policy_version": "0.1",
+  "policy_id": "acme-composite",
+  "policy_hash": "sha256:4d9b5c2e8a37165f0c1b7e4d9a2c8053fb6e1a9d4c8e3072f5a9d2b8e1c47506",
+  "issuer": "acme.example.com",
+  "issued_at": "2026-08-01T00:00:00Z",
+  "applies_to": {
+    "vendors": ["*"],
+    "agents": ["*"]
+  },
+  "rules": [
+    {
+      "id": "rule_block_email_to_competitors",
+      "when": {
+        "action.tool_name": "email.send",
+        "action.target_resource": {
+          "domain_in": ["competitor1.com", "competitor2.com"]
+        }
+      },
+      "then": {
+        "decision": "blocked",
+        "reason": "communication with named competitors is not permitted"
+      }
+    },
+    {
+      "id": "rule_log_external_browser_navigation",
+      "when": {
+        "action.tool_name": "browser.navigate",
+        "action.target_resource": {
+          "domain_not_in": ["acme.com", "*.acme.com"]
+        }
+      },
+      "then": {
+        "decision": "logged_only",
+        "reason": "external navigation logged for audit"
+      }
+    },
+    {
+      "id": "rule_allow_internal_database_reads",
+      "when": {
+        "action.tool_name": {
+          "starts_with": "database.read"
+        }
+      },
+      "then": {
+        "decision": "allowed",
+        "reason": "internal reads are pre-authorized"
+      }
+    }
+  ],
+  "fallback": {
+    "decision": "allow_with_log"
+  },
+  "metadata": {
+    "description": "Three-rule composite policy: block competitor emails, log external nav, fast-path internal reads. First-match-wins semantics."
+  },
+  "signature": {
+    "key_id": "acme-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

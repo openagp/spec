@@ -1,0 +1,40 @@
+{
+  "agp_policy_version": "0.1",
+  "policy_id": "acme-log-database-writes",
+  "policy_hash": "sha256:b27ed419c8a36527d4b8e91f0c3a594bc7f8d20e51a932e7b4c6d8f0915e3247",
+  "issuer": "acme.example.com",
+  "issued_at": "2026-08-01T00:00:00Z",
+  "applies_to": {
+    "vendors": ["*"],
+    "agents": ["*"],
+    "actions": ["tool_call"]
+  },
+  "rules": [
+    {
+      "id": "rule_log_all_database_writes",
+      "when": {
+        "action.tool_name": {
+          "starts_with": "database.write"
+        }
+      },
+      "then": {
+        "decision": "logged_only",
+        "reason": "regulatory requirement: log every database mutation",
+        "annotate": {
+          "scf_controls": ["DATA-08", "AUDIT-12"]
+        }
+      }
+    }
+  ],
+  "fallback": {
+    "decision": "allow_with_log"
+  },
+  "metadata": {
+    "description": "Pass through every database.write* tool call but tag with SCF controls for audit."
+  },
+  "signature": {
+    "key_id": "acme-2026-q2",
+    "alg": "Ed25519",
+    "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}
