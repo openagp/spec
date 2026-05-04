@@ -1,0 +1,141 @@
+{
+  "agp_version": "0.1",
+  "description": "Cross-language RFC 8785 JCS canonicalization test vectors. Implementations MUST produce identical canonical bytes for each input.",
+  "vectors": [
+    {
+      "name": "key_ordering",
+      "description": "Object keys MUST be sorted lexicographically.",
+      "input": {
+        "b": 2,
+        "a": 1,
+        "c": [
+          3,
+          2,
+          1
+        ],
+        "_": "underscore"
+      },
+      "expected_canonical_utf8_hex": "7b225f223a22756e64657273636f7265222c2261223a312c2262223a322c2263223a5b332c322c315d7d",
+      "expected_canonical_sha256_hex": "332365739eb5c765823a74b7634e6f87293a53cace6cd702a746d2c8c29db219"
+    },
+    {
+      "name": "nested_objects",
+      "description": "Nested object keys are also sorted.",
+      "input": {
+        "outer": {
+          "z": 1,
+          "a": 2
+        },
+        "alpha": {
+          "y": [
+            3,
+            1,
+            2
+          ]
+        }
+      },
+      "expected_canonical_utf8_hex": "7b22616c706861223a7b2279223a5b332c312c325d7d2c226f75746572223a7b2261223a322c227a223a317d7d",
+      "expected_canonical_sha256_hex": "94ee94a023de8569e37c2938a1b5d9c6efe06f79a157adb8a245d021a65e5676"
+    },
+    {
+      "name": "unicode_keys_and_strings",
+      "description": "Unicode is preserved verbatim; sort order is by UTF-16 code unit.",
+      "input": {
+        "naïve": "café",
+        "ascii": "plain",
+        "数字": 42,
+        "🚀": "rocket"
+      },
+      "expected_canonical_utf8_hex": "7b226173636969223a22706c61696e222c226e61c3af7665223a22636166c3a9222c22e695b0e5ad97223a34322c22f09f9a80223a22726f636b6574227d",
+      "expected_canonical_sha256_hex": "38e90edf70600a29bd6ea788c963d79bd7bee9b743e1fc6636610281316c5b5a"
+    },
+    {
+      "name": "numbers_integers_and_floats",
+      "description": "Integers print without decimals; round-trip floats use shortest form.",
+      "input": {
+        "int": 42,
+        "neg": -7,
+        "float": 3.14,
+        "zero": 0,
+        "small": 0.5
+      },
+      "expected_canonical_utf8_hex": "7b22666c6f6174223a332e31342c22696e74223a34322c226e6567223a2d372c22736d616c6c223a302e352c227a65726f223a307d",
+      "expected_canonical_sha256_hex": "efdfe0d6b40c921081df501165b0c77744dae90cda530cfd02b0644380b61a20"
+    },
+    {
+      "name": "arrays_preserve_order",
+      "description": "Array element order is preserved (only object keys sort).",
+      "input": {
+        "list": [
+          3,
+          1,
+          4,
+          1,
+          5,
+          9,
+          2,
+          6
+        ]
+      },
+      "expected_canonical_utf8_hex": "7b226c697374223a5b332c312c342c312c352c392c322c365d7d",
+      "expected_canonical_sha256_hex": "6fd81be77dfa1ed292496346a956e6a9f681ff7f775eebdf05f68088869ca1a0"
+    },
+    {
+      "name": "empty_objects_and_arrays",
+      "description": "",
+      "input": {
+        "o": {},
+        "a": [],
+        "ao": [
+          {},
+          {}
+        ],
+        "oo": {
+          "nested": {}
+        }
+      },
+      "expected_canonical_utf8_hex": "7b2261223a5b5d2c22616f223a5b7b7d2c7b7d5d2c226f223a7b7d2c226f6f223a7b226e6573746564223a7b7d7d7d",
+      "expected_canonical_sha256_hex": "68420ded321ed8f7c3f5e1bff316e12074b6bc939091b486a1d4150eb22b7dff"
+    },
+    {
+      "name": "deeply_nested",
+      "description": "",
+      "input": {
+        "a": {
+          "b": {
+            "c": {
+              "d": {
+                "e": {
+                  "f": {
+                    "g": "deep"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "expected_canonical_utf8_hex": "7b2261223a7b2262223a7b2263223a7b2264223a7b2265223a7b2266223a7b2267223a2264656570227d7d7d7d7d7d7d",
+      "expected_canonical_sha256_hex": "fbd0786b3be672cbd1ceada37f46a9a099a28d8d6fa103144b76f3410df60881"
+    },
+    {
+      "name": "minimal_event_skeleton",
+      "description": "An AGP event with only required L1 fields and no signature.",
+      "input": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "test.example",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call"
+        }
+      },
+      "expected_canonical_utf8_hex": "7b22616374696f6e223a7b2274797065223a22746f6f6c5f63616c6c227d2c226163746f72223a7b226167656e745f6964223a226167745f74657374222c2276656e646f72223a22746573742e6578616d706c65227d2c226167705f76657273696f6e223a22302e31222c226576656e745f6964223a226576745f30314a4658593842355a39524851584d3357544e504b34564732222c226f636375727265645f6174223a22323032362d30382d31325431343a32333a31312e3431325a222c22736368656d615f76657273696f6e223a22312e30227d",
+      "expected_canonical_sha256_hex": "a6992d7133e324962f35d858ec7634b046cc46749bdf1cca7c692d0211476c43"
+    }
+  ]
+}

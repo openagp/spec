@@ -1,0 +1,33 @@
+{
+  "agp_version": "0.1",
+  "description": "Cross-language sign/verify test vectors. The test private key is fixed (seed: ASCII 'OPENAGP_TEST_KEY_FOR_INTEROP_VEC') and Ed25519 signatures are deterministic per RFC 8032 — every conformant implementation MUST produce identical signing-input bytes and identical signature bytes.",
+  "test_keypair": {
+    "key_id": "openagp-interop-test-key",
+    "private_key_b64": "T1BFTkFHUF9URVNUX0tFWV9GT1JfSU5URVJPUF9WRUM=",
+    "public_key_b64": "+pd4fwYqNSKIuMYtSwC7E6UZZLXvgZ7pr43rKnNIhug=",
+    "alg": "Ed25519",
+    "warning": "TEST KEY ONLY. Never use this for any real AGP traffic."
+  },
+  "vectors": [
+    {
+      "name": "minimal_event",
+      "input": {
+        "agp_version": "0.1",
+        "schema_version": "1.0",
+        "event_id": "evt_01JFXY8B5Z9RHQXM3WTNPK4VG2",
+        "occurred_at": "2026-08-12T14:23:11.412Z",
+        "actor": {
+          "vendor": "test.example",
+          "agent_id": "agt_test"
+        },
+        "action": {
+          "type": "tool_call"
+        }
+      },
+      "key_id": "openagp-interop-test-key",
+      "expected_signing_input_utf8_hex": "7b22616374696f6e223a7b2274797065223a22746f6f6c5f63616c6c227d2c226163746f72223a7b226167656e745f6964223a226167745f74657374222c2276656e646f72223a22746573742e6578616d706c65227d2c226167705f76657273696f6e223a22302e31222c226576656e745f6964223a226576745f30314a4658593842355a39524851584d3357544e504b34564732222c226f636375727265645f6174223a22323032362d30382d31325431343a32333a31312e3431325a222c22736368656d615f76657273696f6e223a22312e30222c227369676e6174757265223a7b22616c67223a2245643235353139222c226b65795f6964223a226f70656e6167702d696e7465726f702d746573742d6b6579227d7d",
+      "expected_signing_input_sha256_hex": "bf508af564dd2aebe24c8d7a5019956fb59127b4dca884ae7eeb8cba8371e2e5",
+      "expected_signature_b64": "dpAT9JldJjHgXZXjHZ9bI1WnPq7sdkvg6oGO4yuV0q/H9xpQZmeS+1k8HB9AjwAXqFULP3ajiaYSPrR+BfQcDw=="
+    }
+  ]
+}
