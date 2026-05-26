@@ -1,0 +1,7 @@
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The spec is the source of truth for the protocol. All changes are
+# reviewed by stewards; substantive and breaking changes additionally
+# follow the comment-period process in GOVERNANCE.md.
+
+*       @fuax16
