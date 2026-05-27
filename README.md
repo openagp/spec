@@ -24,12 +24,31 @@ See [§4 of the spec](concept-and-spec.md#4-reference-implementation-plan) for t
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/openagp/.github/blob/main/CONTRIBUTING.md) and [GOVERNANCE.md](https://github.com/openagp/.github/blob/main/GOVERNANCE.md) at the org level.
+See [CONTRIBUTING.md](https://github.com/openagp/.github/blob/main/CONTRIBUTING.md) and [GOVERNANCE.md](https://github.com/openagp/.github/blob/main/GOVERNANCE.md) at the org level. For routing — questions vs. bugs vs. spec changes — see [SUPPORT.md](https://github.com/openagp/.github/blob/main/SUPPORT.md).
 
 For spec changes:
-1. Open an issue describing the change and rationale.
+1. Open a [Spec change issue](https://github.com/openagp/spec/issues/new?template=spec_change.yml) describing the change and rationale.
 2. PR adds a decision record in `decisions/`.
 3. Substantive changes have a 2-week comment period; breaking changes have 4 weeks.
+
+### Local checks before opening a PR
+
+```bash
+# Validate every event fixture against schemas/event.json (same script CI runs)
+pip install "jsonschema>=4.21.0" "referencing>=0.34.0"
+# see .github/workflows/validate.yml for the exact validator
+
+# Run the cross-language test vectors against an SDK
+cd ../sdk-python && pytest tests/test_interop.py
+cd ../sdk-typescript && npm test -- interop
+cd ../cts && make vectors
+```
+
+If you're changing a schema or a test vector, **the SDKs and `agp-cts` must all stay green** — they share these inputs.
+
+### Questions
+
+Use [GitHub Discussions on this repo](https://github.com/openagp/spec/discussions) for design conversations and "how do I model X?" questions.
 
 ## License
 
