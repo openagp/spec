@@ -12,6 +12,7 @@ Draft 2020-12 JSON Schemas for every AGP message kind. These are the **canonical
 | [`decision-request.json`](decision-request.json) | Vendor → plane synchronous decision request | C (L3) |
 | [`decision-response.json`](decision-response.json) | Plane → vendor synchronous decision response | C (L3) |
 | [`discovery.json`](discovery.json) | `.well-known/agp` capability + key discovery | — |
+| [`actor.json`](actor.json) | Signed registry entry for a vendor / plane / customer | — |
 
 ## How references work
 
