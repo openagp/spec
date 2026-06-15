@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-05-04
-- **Affects:** [`concept-and-spec.md` §3.4](../concept-and-spec.md#34-canonical-event-schema-flow-a--l1), §3.10, §6.2 Q1
+- **Affects:** [`concept-and-spec.md` §3.4](../concept-and-spec.md#34-canonical-event-schema-flow-a--l1), §3.10, §5 Q1
 - **Supersedes:** —
 - **Deciders:** OpenAGP authors (Zeron founding team)
 
@@ -12,7 +12,7 @@
 
 Every AGP message that carries authority — signed events (Flow A), signed policies (Flow B), signed decision requests/responses (Flow C) — must produce **identical signature bytes** on every conformant implementation, in every language, regardless of which JSON serializer constructed the wire form. Without a precisely-specified canonicalization scheme, signatures will not interoperate, and AGP's entire trust model fails silently.
 
-Spec [§6.2 Q1](../concept-and-spec.md#62-open-questions) flagged this as the single most consequential cryptographic decision in v0.1. This ADR resolves it.
+Spec [§5 Q1](../concept-and-spec.md#5-open-questions) flagged this as the single most consequential cryptographic decision in v0.1. This ADR resolves it.
 
 ## Decision
 
@@ -125,7 +125,7 @@ E.g., wrap the signed object in `{"payload": <event>, "signature": {...}}` inste
 ### Negative
 
 - **No off-the-shelf JWS toolkits.** Implementers cannot reach for `jose` or `pyjwt`. They must compose JCS + Ed25519 + Base64 themselves (or use the OpenAGP reference SDKs, which is the intent).
-- **JCS edge cases need test fixtures.** RFC 8785's number canonicalization (e.g., trailing zeros, exponent normalization) is precise but easy to get subtly wrong. The CTS MUST include fixtures that exercise these edges (numbers with high precision, Unicode normalization, deeply nested objects, large arrays). [§4.2 Phase 0](../concept-and-spec.md#42-build-order--what-claude-code-should-build-first) item 4 — the 50 fixture events — must include canonicalization edge cases.
+- **JCS edge cases need test fixtures.** RFC 8785's number canonicalization (e.g., trailing zeros, exponent normalization) is precise but easy to get subtly wrong. The CTS MUST include fixtures that exercise these edges (numbers with high precision, Unicode normalization, deeply nested objects, large arrays). [§4.2 Phase 0](../concept-and-spec.md#42-build-order) item 4 — the 50 fixture events — must include canonicalization edge cases.
 - **No streaming / partial verification.** The whole canonical form must be in memory to verify. Non-issue at AGP message sizes (events are kilobytes, not megabytes); flagged so nobody assumes streaming verification later.
 
 ### Neutral / for future ADRs
