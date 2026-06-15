@@ -4,7 +4,7 @@
 - **Date:** 2026-05-04
 - **Affects:** [`concept-and-spec.md` §3.4](../concept-and-spec.md#34-canonical-event-schema-flow-a--l1), §3.10, §5 Q1
 - **Supersedes:** —
-- **Deciders:** OpenAGP authors (Zeron founding team)
+- **Deciders:** OpenAGP authors
 
 ---
 
