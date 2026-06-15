@@ -1,9 +1,9 @@
 # AGP — Agent Governance Protocol
 
 **Status:** v0.1 working draft · May 2026
-**Authors:** ZAK / Zeron founding team
-**Audience:** Engineering (Claude Code first reader), founding team, future standards-body collaborators
-**License intent:** Apache-2.0 once published; the spec itself will be CC-BY
+**Authors:** OpenAGP contributors
+**Audience:** Implementers (vendors, planes, auditors) and the future standards working group
+**License intent:** Apache-2.0 for reference implementations; the spec itself is CC-BY
 
 ---
 
@@ -13,15 +13,14 @@
 
 The way SAML standardized "who is this user" across identity vendors, and MCP standardized "what tools can this agent call" across model vendors — AGP standardizes "what is this agent allowed to do, who said so, and what did it actually do" across every AI agent vendor a customer uses.
 
-ZAK ships the canonical AGP implementation. The spec is open. Vendors who ship AGP receivers become trivial to govern; customers who write AGP policy do it once and have it enforced everywhere. The standard is the moat.
+The spec is open. Vendors who ship AGP receivers become trivial to govern; customers who write AGP policy do it once and have it enforced everywhere; auditors verify signed evidence without trusting either party.
 
 This document defines:
-1. **Why** AGP needs to exist (strategy context — short)
+1. **Why** AGP needs to exist
 2. **Core concepts** — actors, terms, the three protocol flows
 3. **v0 protocol specification** — message schemas, conformance levels, security model
-4. **Reference implementation plan** — what Claude Code should build first, in what order
-5. **Adoption strategy** — how a single startup drives industry adoption of an open spec
-6. **Risks and open questions**
+4. **Reference implementation plan** — what to build first, in what order
+5. **Open questions** — technical decisions for the working group
 
 This is a working doc. Things marked **[OPEN]** need a decision; **[DEFER]** is intentionally deferred to a later version.
 
@@ -41,7 +40,7 @@ The customer needs a *unified* view. They cannot get one because no two vendors 
 
 This is the same problem identity had pre-SAML, pre-OAuth: every SaaS vendor invented its own login. Okta's wedge was *not* "we are the best identity provider" — it was "we are the protocol-aggregator that turns a fragmented vendor mess into a single customer view." When SAML standardized the protocol, Okta's role evolved into the canonical implementation of the standard plus the customer-facing control plane.
 
-AGP is that protocol for agent governance. ZAK is that control plane.
+AGP is that protocol for agent governance.
 
 ### 1.2 Why now
 
@@ -51,13 +50,9 @@ Three structural conditions make this the moment:
 2. **No incumbent owns this.** Hyperscalers (Microsoft, Google, AWS) cannot credibly ship a vendor-neutral protocol — their entire commercial motion is to lock customers into their cloud. Foundation model vendors (Anthropic, OpenAI) cannot credibly govern *each other*. Compliance incumbents (Vanta, Drata) own the checklist but not the runtime. The vendor-neutral seat is structurally vacant.
 3. **The first mover sets the spec.** Anthropic's MCP captured "tool calling" by being the first credible attempt to standardize — even though MCP is technically arguable, the network effects locked in. The same window is open for governance. Whoever ships a credible AGP v0 in 2026 sets the conversation for the next decade.
 
-### 1.3 Why ZAK is positioned to drive this
+### 1.3 Why an open standard
 
-- **Existing leverage.** ZAK runtime is in production. The Action Ledger, SCF mapping engine, and seven-layer enforcement model give us a working reference implementation before the spec is even published.
-- **Vendor-neutrality is structural.** ZAK doesn't sell a model, doesn't sell a cloud, doesn't compete with Anthropic or OpenAI. We are the only credible neutral party.
-- **Customer base is the right one.** US mid-market regulated SaaS (Tier 1 ICP) is exactly the buyer who feels the fragmentation pain first. They become the demand pull on vendors to ship AGP receivers.
-
-The wedge is Action Ledger (already in MVP). The category-defining play is AGP. They are the same product, two horizons.
+A proprietary governance protocol fails the moment a vendor refuses to adopt it. An open protocol — with high-quality reference implementations and a conformance suite — lowers the cost of adoption to under an engineer-week and lets customer demand, not any single vendor, drive uptake. The spec is published under CC-BY and developed in the open; reference SDKs are Apache-2.0.
 
 ---
 
@@ -69,7 +64,7 @@ The wedge is Action Ledger (already in MVP). The category-defining play is AGP. 
 |---|---|
 | **Customer** | The organization running agents. Owns policy. Receives events. |
 | **Vendor** | Provides agent capability (Anthropic, OpenAI, an internal agent platform, a SaaS that ships agents). Receives policy. Emits events. |
-| **Plane** | The customer's governance control plane. ZAK is one such plane; in principle any AGP-compliant implementation can play this role. |
+| **Plane** | The customer's governance control plane. Any AGP-compliant implementation can play this role. |
 | **Registry** | Decentralized directory of AGP-compliant vendors and their public keys. |
 | **Auditor** | Read-only consumer of events; may be internal compliance, external auditor, or regulator. |
 
@@ -80,7 +75,7 @@ The wedge is Action Ledger (already in MVP). The category-defining play is AGP. 
 - **Policy** — a customer-authored set of rules describing what agents may, must, or must not do.
 - **Decision** — a vendor-side determination of `allowed | blocked | logged_only` for a specific action, in light of policy.
 - **Event** — a canonical record of an action plus its decision, emitted by the vendor.
-- **Ledger** — the customer-side append-only, hash-chained store of events (see ZAK Action Ledger PRD 01).
+- **Ledger** — the customer-side append-only, hash-chained store of events.
 - **Conformance level** — the depth of AGP support a vendor implements (L1, L2, L3).
 
 ### 2.3 The three protocol flows
@@ -128,29 +123,29 @@ Every plane and vendor exposes a discovery endpoint listing supported conformanc
 {
   "agp_version": "0.1",
   "actor_kind": "vendor",
-  "actor_id": "anthropic.com",
+  "actor_id": "vendor.example",
   "conformance_levels": ["L1", "L2"],
   "public_keys": [
     {
-      "key_id": "anthropic-2026-q2",
+      "key_id": "vendor-2026-q2",
       "purpose": "event_signing",
       "alg": "Ed25519",
       "value": "base64..."
     }
   ],
   "endpoints": {
-    "policy_receive": "https://api.anthropic.com/agp/v0/policy",
-    "policy_read": "https://api.anthropic.com/agp/v0/policy"
+    "policy_receive": "https://api.vendor.example/agp/v0/policy",
+    "policy_read": "https://api.vendor.example/agp/v0/policy"
   },
   "decision_budget_ms": 300,
   "supported_action_types": ["tool_call", "model_response", "session_open"],
-  "registry_record": "agp-registry.org/anthropic.com"
+  "registry_record": "agp-registry.org/vendor.example"
 }
 ```
 
 ### 3.4 Canonical event schema (Flow A — L1)
 
-This is the single most important message in the protocol. Schema is intentionally aligned with ZAK's Action Ledger schema (PRD 01) so the canonical event *is* the Action Ledger event. Every AGP-compliant plane MUST be able to ingest this format directly.
+This is the single most important message in the protocol. The schema is designed so the canonical event *is* the plane's ledger event — every AGP-compliant plane MUST be able to ingest this format directly.
 
 ```json
 {
@@ -159,7 +154,7 @@ This is the single most important message in the protocol. Schema is intentional
   "event_id": "evt_01JFXY8B...",            // ULID, vendor-generated, immutable
   "occurred_at": "2026-08-12T14:23:11.412Z",
   "actor": {
-    "vendor": "anthropic.com",               // FQDN or registry-issued ID
+    "vendor": "vendor.example",               // FQDN or registry-issued ID
     "agent_id": "agt_claude_3_5_sonnet",
     "human_principal": "user_hash_2d4f..."   // sha256 of upstream user id
   },
@@ -183,7 +178,7 @@ This is the single most important message in the protocol. Schema is intentional
     "parent_event_id": null
   },
   "signature": {
-    "key_id": "anthropic-2026-q2",
+    "key_id": "vendor-2026-q2",
     "alg": "Ed25519",
     "value": "base64..."
   }
@@ -208,7 +203,7 @@ policy_hash: "sha256:..."        # computed from canonicalized body
 issuer: "acme.example.com"
 issued_at: "2026-08-01T00:00:00Z"
 applies_to:
-  vendors: ["anthropic.com", "openai.com"]
+  vendors: ["vendor.example", "vendor-b.example"]
   agents: ["*"]
   actions: ["tool_call", "model_response"]
 rules:
@@ -258,7 +253,7 @@ For high-stakes actions, vendors call back to the plane synchronously.
   "decision_request_id": "drq_01JFX...",
   "occurred_at": "2026-08-12T14:23:11Z",
   "actor": {
-    "vendor": "anthropic.com",
+    "vendor": "vendor.example",
     "agent_id": "agt_claude_3_5_sonnet",
     "human_principal": "user_hash_2d4f..."
   },
@@ -308,7 +303,7 @@ AGP uses public-key cryptography end-to-end.
 
 **The AGP Registry** is a public, decentralized directory. v0 implementation: a public Git repository (`github.com/agp-registry/registry`) where each entry is a signed JSON file. Vendors and planes submit pull requests; a working group merges. Future versions move to an append-only ledger of its own (likely a transparency log).
 
-**[OPEN]** — Registry governance. Working group composition. Conflict resolution. Decision: defer until first 5 vendors join; bootstrap via ZAK + Anthropic + OpenAI + 2 customer references.
+**[OPEN]** — Registry governance. Working group composition. Conflict resolution. Decision: defer until the first 5 actors join; bootstrap with an initial reference plane, early-adopter vendors, and customer references.
 
 ### 3.8 Conformance and self-test
 
@@ -321,7 +316,7 @@ CTS is a CLI tool (`agp-cts`) that:
 
 Vendors who pass list themselves in the registry with their conformance level. Customers can require minimum levels in procurement.
 
-**[OPEN]** — Whether the CTS itself is centrally administered (ZAK-run) or runs entirely on the vendor side (with reports verifiable by anyone). Default: client-side runner, anyone can verify reports — no central authority.
+**[OPEN]** — Whether the CTS itself is centrally administered or runs entirely on the vendor side (with reports verifiable by anyone). Default: client-side runner, anyone can verify reports — no central authority.
 
 ### 3.9 Backward compatibility, versioning, and deprecation
 
@@ -335,7 +330,7 @@ Vendors who pass list themselves in the registry with their conformance level. C
 |---|---|
 | Vendor forges events | Events signed; plane verifies against vendor's registered key. Forgery requires key compromise. |
 | Plane forges policy | Policies signed by customer; vendor verifies against customer-registered key. |
-| Replay / reorder | `event_id` is unique; `occurred_at` is checkable; events join a customer-side hash chain (Action Ledger). |
+| Replay / reorder | `event_id` is unique; `occurred_at` is checkable; events join a customer-side hash chain (the ledger). |
 | Vendor cannot reach plane (L3) | Policy declares `fallback`; vendor applies it. Event records that fallback was used. |
 | Compromised registry entry | Registry entries are themselves signed; mirrors verify. |
 | Schema drift | Versioned schema; receivers validate; CTS catches divergence. |
@@ -345,11 +340,11 @@ Vendors who pass list themselves in the registry with their conformance level. C
 
 ## 4. Reference implementation plan
 
-This section is the most important for Claude Code. It defines what to build, in what order, and how each piece relates to existing ZAK MVP work.
+This section defines what to build, and in what order, to bring up a conformant set of reference implementations.
 
 ### 4.1 Repositories
 
-We will create the following GitHub repositories:
+The following GitHub repositories make up the reference implementation:
 
 | Repo | Purpose | Language | License |
 |---|---|---|---|
@@ -360,9 +355,7 @@ We will create the following GitHub repositories:
 | `openagp/registry` | Public registry of compliant actors | YAML (GitOps) | CC0 |
 | `openagp/examples` | Worked examples — mock vendor, mock plane, end-to-end demo | Python | Apache-2.0 |
 
-`zak/` (the closed-source product repos) consume `openagp/sdk-python` as the reference plane implementation.
-
-### 4.2 Build order — what Claude Code should build first
+### 4.2 Build order
 
 **Phase 0 — Spec formalization (Week 1, 1 engineer)**
 
@@ -401,33 +394,33 @@ Goal: any vendor can run `agp-cts validate-vendor --endpoint https://...` and ge
 2. Output: signed conformance report (JSON) listing which conformance level the implementation passed.
 3. Distributable as a single static binary for Linux, macOS, Windows.
 
-**Phase 3 — Plane integration in ZAK (Weeks 6–8, 1 engineer)**
+**Phase 3 — Plane integration (Weeks 6–8, 1 engineer)**
 
-Goal: ZAK speaks AGP natively. Existing Anthropic + OpenAI vendor connectors (PRD 03) become AGP-shaped under the hood.
+Goal: a governance plane speaks AGP natively.
 
-1. ZAK's `POST /v1/events` endpoint also accepts AGP-formatted events (already substantially compatible — schemas are aligned).
-2. ZAK exposes `.well-known/agp` for itself.
-3. ZAK Action Ledger emits AGP-conformant events to any subscribed plane (chained planes scenario).
-4. ZAK Console v1 (PRD 04) shows an "AGP-status" badge per vendor — green for L1+, yellow for L1 only, gray for non-compliant.
-5. The ZAK `agp-cts` runner becomes part of the customer's vendor-onboarding playbook.
+1. The plane's event-ingest endpoint accepts AGP-formatted events and verifies signatures against the registry.
+2. The plane exposes `.well-known/agp` for itself and signs decision responses (for L3).
+3. The plane's event store ingests AGP-conformant events and can re-emit them to a subscribed plane (chained-planes scenario).
+4. A console surfaces a per-vendor AGP conformance badge — green for L1+, yellow for L1 only, gray for non-compliant.
+5. `agp-cts` becomes part of the customer's vendor-onboarding playbook.
 
-**Phase 4 — Registry bootstrap (Weeks 8–12, 0.5 engineer + founder time)**
+**Phase 4 — Registry bootstrap (Weeks 8–12)**
 
-Goal: 5 actors registered, including 2 customers.
+Goal: the first actors registered, including at least one plane and one customer.
 
 1. `openagp/registry` repo with PR-based submission flow.
-2. ZAK is the first registered plane.
-3. Anthropic + OpenAI submitted as L1 (we author the entries; they confirm/co-sign or we ask them to take over).
-4. 2 customer references registered.
-5. Public website `openagp.io` (or equivalent) listing the registry.
+2. A reference plane registers as the first entry.
+3. Early-adopter vendors submit L1 entries.
+4. Customer references registered.
+5. Public website `openagp.io` listing the registry.
 
-### 4.3 What Claude Code should NOT build first
+### 4.3 What NOT to build first
 
 - **L3 reference implementation.** L3 (real-time decision) requires sub-300ms round-trip and adds significant complexity. Land L1 + L2 first.
 - **Custom DSL parser beyond YAML.** v0 policy is YAML-shaped. A richer DSL (e.g., Rego-style) is a v0.3 conversation.
 - **Federation between planes.** Plane-to-plane sync is post-v1.
 - **GUI policy editors.** AGP is a protocol; UX is the plane's job.
-- **Vendor-specific shims.** Anthropic and OpenAI specifically — those live in ZAK's connectors (PRD 03) until those vendors ship native AGP receivers.
+- **Vendor-specific shims.** Adapters that translate a non-conformant vendor's signals into AGP events belong in a plane's connector layer, not in the spec or the reference SDKs, until those vendors ship native AGP receivers.
 
 ### 4.4 Definition of done — v0.1 launch
 
@@ -435,129 +428,64 @@ The spec is ready for public release when:
 
 - [ ] `openagp/spec` is published with schemas, fixtures, and a complete signature canonicalization spec.
 - [ ] `openagp/sdk-python` and `openagp/sdk-typescript` pass cross-language interop CI.
-- [ ] `openagp/cts` validates ZAK's plane and a mock-vendor implementation end-to-end.
-- [ ] `openagp/registry` has 5 entries (ZAK + 2 vendors + 2 customers).
+- [ ] `openagp/cts` validates a reference plane and a mock-vendor implementation end-to-end.
+- [ ] `openagp/registry` has 5 entries (a reference plane + 2 vendors + 2 customers).
 - [ ] An external engineer (not the spec authors) ships a vendor implementation in < 1 working week using the SDK.
 
-Target: ~12 weeks of engineering. Aligns with ZAK's MVP shipping window — by the time v1 customers are paying, AGP v0.1 is public.
+Target: ~12 weeks of engineering.
 
 ---
 
-## 5. Adoption strategy
+## 5. Open questions
 
-A single startup driving an open standard works only if the standard is genuinely better for everyone — and if early signals are unmistakable.
+Spec-level decisions still on the table for the working group. Comment periods follow the governance model (2 weeks substantive, 4 weeks breaking).
 
-### 5.1 The four parties and what we offer each
-
-**Customers** — get one policy language, one audit view, no per-vendor integration burden. Their compliance toil drops by 80%. Their procurement RFPs add "minimum AGP L1" as a default. *Pull on vendors.*
-
-**Vendors** — get a published spec, free SDKs in two languages, a CTS that turns "AGP-compliant" into a checkbox, and a registry listing that prospects discover them through. The cost to ship L1 is < 1 engineer-week. *No reason to refuse.*
-
-**Auditors and regulators** — get standardized evidence formats. EU AI Act conformity reports become mechanical. *Become advocates.*
-
-**Foundation models** — get a path out of "we are responsible for governance" toward "the customer's plane governs us." Anthropic's recent governance posture (post Claude Security launch) suggests they want this shape. *Strategic alignment.*
-
-### 5.2 The sequencing
-
-| Quarter | Move |
-|---|---|
-| Q3 2026 | Spec v0.1 + SDKs published. ZAK is the first plane. |
-| Q3 2026 | First customer deployments use AGP under the hood (transparent to them). |
-| Q4 2026 | Co-author entries with Anthropic + OpenAI or, if they decline, ship adapters that make their products AGP-shaped from outside (we already have to do this for PRD 03). |
-| Q1 2027 | Working group formed. Membership: ZAK + 2 vendors + 2 customers + 1 academic. |
-| Q1 2027 | First customer RFP contains "vendor must be AGP L1 conformant." (We'll seed this with our reference customers.) |
-| Q2 2027 | v0.2 of spec — incorporates working-group feedback, formalizes DSL grammar, opens governance. |
-| Q3 2027 | First non-ZAK plane implementation appears (likely a hyperscaler responding to customer pull). |
-| 2028 | AGP becomes the default expectation in regulated procurement. |
-
-### 5.3 Why we publish the spec instead of keeping it proprietary
-
-A common pushback: "if you publish the spec, anyone can build a competing plane."
-
-That's the point. The moat is not the spec. The moat is:
-
-1. **Reference implementation quality** — ZAK's plane is materially better than a from-scratch alternative.
-2. **Customer Action Ledger lock-in** — by the time a competing plane arrives, customers have years of audit history in ZAK.
-3. **SCF + ZAK runtime leverage** — competitors don't have these.
-4. **Standards capture** — the working group's chair sets the future direction. We chair it.
-
-A proprietary protocol fails the moment a vendor refuses to adopt it. An open protocol with us as the canonical implementation captures the customer demand AND positions us as the reference point.
-
-This is the Okta playbook. It worked.
-
-### 5.4 What "winning" looks like
-
-- 50+ vendors registered as L1+ by end of 2027.
-- AGP referenced in EU AI Act technical guidance (or US equivalent) as an example of conformity infrastructure.
-- ZAK is the canonical plane, but is not the only plane — proving the protocol's neutrality.
-- Customers say "is your X AGP-compliant?" the way they say "do you support SAML?"
+- **Q1 — Signature canonicalization.** Resolved for v0.1 by [ADR 0001](decisions/0001-signature-canonicalization.md): RFC 8785 JCS + Ed25519 detached signatures, with `key_id` and `alg` bound into the signed bytes.
+- **Q2 — Decision-request budget.** Is a 300 ms default reasonable? Some workloads (HITL) need seconds; some (autocomplete) need < 50 ms. *Recommendation: 300 ms default; a vendor may advertise a different budget in `.well-known/agp`, and the plane respects the vendor's stated budget.*
+- **Q3 — Registry storage.** A Git-based registry is fine for v0; what is the v1 plan? *Defer until there are 20+ entries and Git friction becomes real (likely a transparency log).*
+- **Q4 — Event batching.** Should events be batchable (`POST /agp/v0/events:batch`) for high-throughput vendors? *Recommendation: add in v0.2; single events in v0.1 to keep the spec tight.*
+- **Q5 — Policy DSL grammar.** The v0.1 DSL is illustrative; v0.2 should publish a formal JSON Schema for the DSL with a reference parser.
 
 ---
 
-## 6. Risks and open questions
+## 6. Glossary
 
-### 6.1 Risks
-
-- **R1 — Anthropic ships a competing protocol via MCP extension.** Likely the single biggest risk. *Mitigation:* engage Anthropic early; offer co-authorship; be willing to merge MCP-extension semantics into AGP if the technical merits warrant it. Better to be co-stewards of the standard than competitors.
-- **R2 — Hyperscalers ship a captive variant.** Microsoft Purview-for-Agents could ship an "open-but-Azure-locked" governance protocol. *Mitigation:* speed. v0.1 in market within ~12 weeks. Customer pull crystallizes before hyperscalers can move.
-- **R3 — No vendor adopts.** Without vendor adoption, AGP is shelfware. *Mitigation:* the SDK lowers cost to < 1 engineer-week. Customer RFP pull (sequencing §5.2) creates demand. Worst case, we adapter-shim non-compliant vendors and ship the events anyway — as PRD 03 already does.
-- **R4 — The working group fights itself.** Standards committees historically slow to glacial. *Mitigation:* explicit governance model; ZAK chairs initially; biased toward shipping over consensus until v1.0.
-- **R5 — Spec gets too complex.** Designing-by-committee bloats specs. *Mitigation:* every addition must come with two existing implementations; otherwise rejected.
-
-### 6.2 Open questions
-
-- **Q1 (eng / spec):** Signature canonicalization scheme — JCS (RFC 8785), JWS, or something custom? *Recommendation: JCS for canonicalization + Ed25519 detached signatures. Decision needed week 1 of Phase 0.*
-- **Q2 (eng / spec):** Decision-request budget — 300ms default reasonable? Some workloads (HITL) need seconds; some (autocomplete) need < 50ms. *Recommendation: 300ms default, vendor can advertise different budget in `.well-known/agp`. Plane respects vendor's stated budget.*
-- **Q3 (legal):** Spec license — Apache-2.0 vs. CC-BY vs. RFC-style? Patent grants? *Action: legal review. Recommendation: spec as CC-BY; SDKs as Apache-2.0 with explicit patent grant.*
-- **Q4 (strategy):** Do we approach Anthropic and OpenAI before publishing v0.1, or publish first? *Recommendation: publish first. Easier for them to engage with a real artifact than a proposal.*
-- **Q5 (strategy):** Do we name the standard "AGP" publicly or workshop the name? *Recommendation: workshop. The working name is fine internally; the public name benefits from broader input. Possible alternative names: AGCP (Agent Governance Control Protocol), OAGP (Open Agent Governance Protocol).*
-- **Q6 (eng):** Registry — Git-based v0 is fine, but what's the v1 plan? *Defer. Decide once we have 20+ entries and Git friction becomes real.*
-- **Q7 (eng):** Should events be batchable? `POST /agp/v0/events:batch` for high-throughput vendors? *Recommendation: yes, in v0.2. Single events in v0.1 to keep the spec tight.*
-- **Q8 (strategy):** When do we propose AGP to a standards body (IETF, OASIS, W3C)? *Recommendation: not until v1.0 and 20+ adopters. Standards bodies are the destination, not the starting point.*
-
----
-
-## 7. Glossary
-
-- **Action Ledger** — ZAK's append-only, hash-chained, SCF-tagged event store. AGP events flow into it natively.
 - **AGP** — Agent Governance Protocol. The standard defined in this document.
 - **Conformance Level** — depth of AGP support: L1 (events only), L2 (events + policy), L3 (events + policy + real-time decision).
 - **CTS** — Conformance Test Suite. CLI for self-testing and signed reports.
-- **MCP** — Model Context Protocol. Anthropic's tool-calling standard. Adjacent but distinct from AGP.
-- **Plane** — customer-side governance control plane. ZAK is one such plane.
-- **Policy** — customer-authored rules in AGP DSL.
+- **Ledger** — a plane's append-only, hash-chained event store. AGP events flow into it natively.
+- **MCP** — Model Context Protocol, a tool-calling standard. Adjacent but distinct from AGP.
+- **Plane** — a customer-side governance control plane.
+- **Policy** — customer-authored rules in the AGP policy DSL.
 - **Registry** — public directory of AGP-compliant actors with their public keys.
-- **SCF** — Secure Controls Framework. Crosswalk between regulatory frameworks; ZAK uses it for compliance evidence.
-- **Vendor** — provider of agent capability. Implements AGP at chosen conformance level.
+- **Vendor** — provider of agent capability. Implements AGP at a chosen conformance level.
 
 ---
 
-## 8. Document conventions and contribution
+## 7. Document conventions and contribution
 
 - **[OPEN]** — open question requiring decision.
 - **[DEFER]** — explicitly out of scope for v0.1.
 - **MUST / MUST NOT / SHOULD / MAY** — used per RFC 2119 conventions.
 
-This document lives at `openagp/spec/concept-and-spec.md` once the repo exists. Until then, it lives in the ZAK working folder. Iterations follow the same versioning conventions defined in §3.9.
-
-Contributions welcome by PR once the repo is public. Until then: discuss with founding team.
+This document lives at `openagp/spec/concept-and-spec.md`. Iterations follow the versioning conventions defined in §3.9. Contributions are welcome by PR; see the org-level `CONTRIBUTING.md` and `GOVERNANCE.md`.
 
 ---
 
-## 9. Appendix A — Worked example
+## 8. Appendix A — Worked example
 
 Here is an end-to-end trace showing AGP in action for a single high-stakes action.
 
-**Scenario:** Acme Inc. uses ZAK as its plane. Anthropic (L1+L2) and OpenAI (L1) are registered vendors. An Acme employee asks Claude to send an email summarizing a quarterly report to an external recipient.
+**Scenario:** Acme Inc. runs a governance plane. `vendor.example` (L1+L2) is a registered agent vendor. An Acme employee asks an agent to send an email summarizing a quarterly report to an external recipient.
 
 **Step 1 — Policy push (one-time, periodic).**
-Acme writes the policy below and ZAK signs and pushes it to Anthropic via `POST /agp/v0/policy`.
+Acme writes the policy below; the plane signs and pushes it to the vendor via `POST /agp/v0/policy`.
 
 ```yaml
 agp_policy_version: "0.1"
 policy_id: acme-prod
 applies_to:
-  vendors: ["anthropic.com"]
+  vendors: ["vendor.example"]
   agents: ["*"]
 rules:
   - id: rule_external_email_review
@@ -570,16 +498,16 @@ rules:
       reason: "external email requires human review"
 ```
 
-Anthropic acknowledges, returns the policy hash, applies it to all subsequent agent invocations within the SLA.
+The vendor acknowledges, returns the policy hash, and applies it to all subsequent agent invocations within the SLA.
 
 **Step 2 — Action attempted.**
-Claude, mid-conversation, decides to call `email.send` with `target_resource: external@customer.com`.
+The agent, mid-conversation, decides to call `email.send` with `target_resource: external@customer.com`.
 
 **Step 3 — Vendor evaluates against active policy.**
-Anthropic's AGP receiver matches the rule. Decision: `blocked`.
+The vendor's AGP receiver matches the rule. Decision: `blocked`.
 
 **Step 4 — Event emitted (Flow A).**
-Anthropic POSTs to ZAK's `/agp/v0/events`:
+The vendor POSTs to the plane's `/agp/v0/events`:
 
 ```json
 {
@@ -587,8 +515,8 @@ Anthropic POSTs to ZAK's `/agp/v0/events`:
   "event_id": "evt_01JFXY8B...",
   "occurred_at": "2026-08-12T14:23:11.412Z",
   "actor": {
-    "vendor": "anthropic.com",
-    "agent_id": "agt_claude_3_5_sonnet",
+    "vendor": "vendor.example",
+    "agent_id": "agt_assistant",
     "human_principal": "user_hash_2d4f..."
   },
   "action": {
@@ -605,33 +533,17 @@ Anthropic POSTs to ZAK's `/agp/v0/events`:
     "rationale": "external email requires human review"
   },
   "lineage": { "trace_id": "trc_01JFX...", "parent_event_id": null },
-  "signature": { "key_id": "anthropic-2026-q2", "alg": "Ed25519", "value": "..." }
+  "signature": { "key_id": "vendor-2026-q2", "alg": "Ed25519", "value": "..." }
 }
 ```
 
-**Step 5 — ZAK ingests, verifies, anchors.**
-ZAK verifies Anthropic's signature against the registry. Adds the event to Acme's hash-chained Action Ledger. Tags with SCF controls (`AUDIT-12`, `DATA-08`). Surfaces in Acme's Console.
+**Step 5 — Plane ingests, verifies, anchors.**
+The plane verifies the vendor's signature against the registry, adds the event to Acme's hash-chained ledger, optionally tags it with regulatory-framework controls, and surfaces it in the customer's console.
 
 **Step 6 — Compliance evidence.**
-Acme's compliance lead, two weeks later, generates an EU AI Act conformity report. The report cites this event as evidence of automated policy enforcement under Article 14 (Human Oversight). The auditor accepts the evidence because the event is signed, chained, and verifiable independently of ZAK.
+Acme's compliance lead, two weeks later, generates an EU AI Act conformity report. The report cites this event as evidence of automated policy enforcement under Article 14 (Human Oversight). The auditor accepts the evidence because the event is signed, chained, and verifiable independently of the plane.
 
-**No bespoke integration was written.** Acme wrote one policy. Anthropic ran one policy. ZAK delivered one ledger. AGP made the wires interoperate.
-
----
-
-## 10. Appendix B — How AGP relates to existing ZAK MVP work
-
-| AGP component | Existing ZAK PRD | Relationship |
-|---|---|---|
-| Canonical event schema | PRD 01 — Action Ledger | Same schema. ZAK Action Ledger is the canonical AGP plane reference. |
-| Vendor connectors | PRD 03 — Vendor Connectors L3 | Connectors translate non-AGP vendor signals into AGP events. Once vendors ship native AGP, connectors become thin pass-throughs. |
-| Runtime emission | PRD 02 — Runtime Event Emission | ZAK Runtime emits AGP-shaped events natively. ZAK Runtime is itself an L1+ AGP vendor. |
-| Console badging | PRD 04 — Console v1 | Console v1 displays per-vendor AGP conformance level (P1 in PRD 04). |
-| Compliance evidence | PRD 05 — Compliance Pack | Bundles cite AGP-signed events; auditors verify via registry. |
-
-The MVP ships AGP-compatible by accident-of-design — schemas were aligned from day one. AGP v0.1 is the formalization of work that's already happening, plus the SDK + CTS + Registry that makes it adoptable by others.
-
-This is the intended sequencing. Build the wedge as if AGP were already a standard. When the wedge ships, the standard is real.
+**No bespoke integration was written.** Acme wrote one policy. The vendor ran one policy. The plane delivered one ledger. AGP made the wires interoperate.
 
 ---
 
